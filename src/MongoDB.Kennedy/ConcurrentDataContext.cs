@@ -18,12 +18,28 @@ namespace MongoDB.Kennedy
 
 		/// <summary>
 		/// Save changes to entity back to MongoDB *with* concurrency protection.
+		/// The name of the collection will be the name of the type.
+		/// The save mode is ConcurrentSaveOptions.ProtectServerChanges.
 		/// </summary>
 		/// <typeparam name="T">Type of entity</typeparam>
 		/// <param name="entity">The entity to be saved</param>
 		public override void Save<T>(T entity)
 		{
-			Save(entity, ConcurrentSaveOptions.ProtectServerChanges);
+			Save(entity, GetCollectionName<T>(), ConcurrentSaveOptions.ProtectServerChanges);
+		}
+
+		/// <summary>
+		/// Save changes to entity back to MongoDB with concurrency protection 
+		/// specified by saveOptions. If you want to *overwrite* changes made 
+		/// on the server use ConcurrentSaveOptions.OverwriteServerChanges.
+		/// The save mode is ConcurrentSaveOptions.ProtectServerChanges.
+		/// </summary>
+		/// <typeparam name="T">Type of entity</typeparam>
+		/// <param name="entity">The entity to be saved</param>
+		/// <param name="collectionName">The name of the collection in the MongoDB database</param>
+		public override void Save<T>(T entity, string collectionName)
+		{
+			this.Save(entity, collectionName, ConcurrentSaveOptions.ProtectServerChanges);
 		}
 
 		/// <summary>
@@ -39,15 +55,19 @@ namespace MongoDB.Kennedy
 		/// </param>
 		public void Save<T>(T entity, ConcurrentSaveOptions saveOptions) where T : IMongoEntity
 		{
+			this.Save(entity, GetCollectionName<T>(), saveOptions);
+		}		
+		
+		public void Save<T>(T entity, string connectionName, ConcurrentSaveOptions saveOptions) where T : IMongoEntity
+		{
 			if (entity._id == ObjectId.Empty)
-				InternalInsert(entity);
+				InternalInsert(entity, connectionName);
 			else
-				InternalUpdate(entity, saveOptions);
+				InternalUpdate(entity, connectionName, saveOptions);
 		}
 
-		private void InternalInsert<T>(T entity) where T : IMongoEntity
+		private void InternalInsert<T>(T entity, string name) where T : IMongoEntity
 		{
-			var name = GetCollectionName<T>();
 			var coll = Db.GetCollection<T>(name);
 			entity._accessId = BuildAccessId();
 
@@ -56,9 +76,8 @@ namespace MongoDB.Kennedy
 				throw new MongoQueryException("Cannot insert entity: " + concern.LastErrorMessage);
 		}
 
-		private void InternalUpdate<T>(T entity, ConcurrentSaveOptions saveOptions) where T : IMongoEntity
+		private void InternalUpdate<T>(T entity, string name, ConcurrentSaveOptions saveOptions) where T : IMongoEntity
 		{
-			var name = GetCollectionName<T>();
 			var coll = Db.GetCollection<T>(name);
 
 			IMongoQuery find;
