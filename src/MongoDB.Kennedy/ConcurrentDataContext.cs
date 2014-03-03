@@ -53,41 +53,52 @@ namespace MongoDB.Kennedy
 		/// Enables or disables concurrency projected, 
 		/// ConcurrentSaveOptions.ProtectServerChanges is recommended.
 		/// </param>
-		public void Save<T>(T entity, ConcurrentSaveOptions saveOptions) where T : IMongoEntity
+		public void Save<T>(T entity, ConcurrentSaveOptions saveOptions) where T: class
 		{
 			this.Save(entity, GetCollectionName<T>(), saveOptions);
 		}		
 		
-		public void Save<T>(T entity, string connectionName, ConcurrentSaveOptions saveOptions) where T : IMongoEntity
+		public void Save<T>(T entity, string connectionName, ConcurrentSaveOptions saveOptions) where T : class
 		{
-			if (entity._id == ObjectId.Empty)
+			if (entity == null)
+				throw new ArgumentNullException("entity");
+
+			IMongoEntity mongoEntity = entity as IMongoEntity;
+			if (mongoEntity== null)
+				throw new InvalidOperationException("Cannot save entity in ConcurrentDataContext. " + typeof(T).Name + " does not implemented IMongoEntity.");
+
+			if (mongoEntity._id == ObjectId.Empty)
 				InternalInsert(entity, connectionName);
 			else
 				InternalUpdate(entity, connectionName, saveOptions);
 		}
 
-		private void InternalInsert<T>(T entity, string name) where T : IMongoEntity
+		private void InternalInsert<T>(T entity, string name)// where T : IMongoEntity
 		{
+			IMongoEntity mongoEntity = (IMongoEntity)entity;
+
 			var coll = Db.GetCollection<T>(name);
-			entity._accessId = BuildAccessId();
+			mongoEntity._accessId = BuildAccessId();
 
 			WriteConcernResult concern = coll.Insert(entity);
 			if (!concern.Ok)
 				throw new MongoQueryException("Cannot insert entity: " + concern.LastErrorMessage);
 		}
 
-		private void InternalUpdate<T>(T entity, string name, ConcurrentSaveOptions saveOptions) where T : IMongoEntity
+		private void InternalUpdate<T>(T entity, string name, ConcurrentSaveOptions saveOptions)// where T : IMongoEntity
 		{
+			IMongoEntity mongoEntity = (IMongoEntity)entity;
+
 			var coll = Db.GetCollection<T>(name);
 
 			IMongoQuery find;
 			if (saveOptions == ConcurrentSaveOptions.ProtectServerChanges)
-				find = Query.And(Query.EQ("_id", entity._id), Query.EQ("_accessId", entity._accessId));
+				find = Query.And(Query.EQ("_id", mongoEntity._id), Query.EQ("_accessId", mongoEntity._accessId));
 			else
-				find = Query.EQ("_id", entity._id);
+				find = Query.EQ("_id", mongoEntity._id);
 
-			string originalAccessId = entity._accessId;
-			entity._accessId = BuildAccessId();
+			string originalAccessId = mongoEntity._accessId;
+			mongoEntity._accessId = BuildAccessId();
 
 			try
 			{
@@ -108,19 +119,20 @@ namespace MongoDB.Kennedy
 				
 				// problem. is there just no document or is there a concurrency problem.
 				// let's do a little work to no be overly agressive on the errors.
-				bool isConcurrencyError = coll.AsQueryable().Any(e => e._id == entity._id);
+
+				bool isConcurrencyError = coll.Find(Query.EQ("_id", mongoEntity._id)).Any();//coll.AsQueryable().Any(e => e._id == mongoEntity._id);
 				if (isConcurrencyError)
 				{
-					throw new MongoConcurrencyException("Entity modified by other writer since being retreived from db: id = " + entity._id);
+					throw new MongoConcurrencyException("Entity modified by other writer since being retreived from db: id = " + mongoEntity._id);
 				}
 				else
 				{
-					throw new MongoException("Cannot update entity (no entity with ID " + entity._id + " exists in the db.");
+					throw new MongoException("Cannot update entity (no entity with ID " + mongoEntity._id + " exists in the db.");
 				}
 			}
 			catch
 			{
-				entity._accessId = originalAccessId;
+				mongoEntity._accessId = originalAccessId;
 				throw;
 			}
 		}

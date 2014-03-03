@@ -1,15 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using MongoDB.Driver;
+using System.Runtime.Serialization;
 
 namespace MongoDB.Kennedy
 {
 	[Serializable]
-	public class MongoConcurrencyException : MongoException
+	public class MongoConcurrencyException : MongoContextException 
 	{
-		public MongoConcurrencyException(string msg) : base(msg)
+		public MongoConcurrencyException(string message) : base(message)
+		{
+		}
+
+		public MongoConcurrencyException(string message, Exception innerException) : base(message, innerException)
+		{
+		}
+
+		public MongoConcurrencyException(SerializationInfo info, StreamingContext context)
+			: base(info, context)
 		{
 		}
 	}

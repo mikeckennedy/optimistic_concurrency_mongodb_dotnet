@@ -52,6 +52,7 @@
     <Compile Include="ConcurrentSaveOptions.cs" />
     <Compile Include="IMongoEntity.cs" />
     <Compile Include="MongoConcurrencyException.cs" />
+    <Compile Include="MongoContextException.cs" />
     <Compile Include="MongoDbDataContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
