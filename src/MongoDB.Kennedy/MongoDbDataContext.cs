@@ -45,7 +45,7 @@ namespace MongoDB.Kennedy
 		{
 			get { return _db; }
 		}
-		
+
 		protected MongoCollection<T> GetMongoCollection<T>()
 		{
 			return Db.GetCollection<T>(GetCollectionName<T>());
@@ -53,7 +53,7 @@ namespace MongoDB.Kennedy
 
 		protected IQueryable<T> GetCollection<T>()
 		{
-			return this.GetMongoCollection<T>().AsQueryable();
+			return GetMongoCollection<T>().AsQueryable();
 		}
 
 		public virtual void Delete<T>(ObjectId entityId)
@@ -76,9 +76,9 @@ namespace MongoDB.Kennedy
 
 		public virtual void Delete<T>(T entity, string collectionName) where T : IMongoEntity
 		{
-			this.Delete(entity._id, collectionName);
+			Delete(entity._id, collectionName);
 		}
-		
+
 		public virtual void Save<T>(T entity) where T : class
 		{
 			string name = GetCollectionName<T>();
@@ -95,7 +95,7 @@ namespace MongoDB.Kennedy
 
 		protected static string GetCollectionName<T>()
 		{
-			return typeof(T).Name;
+			return typeof (T).Name;
 		}
 
 		public void Clear<T>()

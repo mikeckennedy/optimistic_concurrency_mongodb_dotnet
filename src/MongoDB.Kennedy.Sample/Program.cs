@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Linq;
-using MongoDB.Bson;
-using MongoDB.Driver;
 
 namespace MongoDB.Kennedy.Sample
 {
 	internal class Program
 	{
-		private static void Main(string[] args)
+		private static void Main()
 		{
 			Console.WriteLine("Sample app for concurrent mongodb context by @mkennedy");
 
-			DataContext ctx = new DataContext("SampleDriverDb");
+			var ctx = new DataContext("SampleDriverDb");
 			if (!ctx.Books.Any())
 			{
 				Console.WriteLine("Adding sample data.");
@@ -29,12 +27,12 @@ namespace MongoDB.Kennedy.Sample
 			if (edit == "y")
 			{
 				// imagine this ran in another app or page request in parallel.
-				var bookEdited = ctx.Books.OrderBy(b => b._id).First();
+				Book bookEdited = ctx.Books.OrderBy(b => b._id).First();
 				bookEdited.PageCount++;
 				ctx.Save(bookEdited);
 			}
 
-			ConcurrentSaveOptions saveMode = ConcurrentSaveOptions.ProtectServerChanges;
+			var saveMode = ConcurrentSaveOptions.ProtectServerChanges;
 			if (edit == "y")
 			{
 				Console.Write("Do you want to save in 'protect server changes mode' or 'overwrite mode'? [P/O]  ");
@@ -42,7 +40,6 @@ namespace MongoDB.Kennedy.Sample
 				saveMode = writeMode == "o"
 					? ConcurrentSaveOptions.OverwriteServerChanges
 					: ConcurrentSaveOptions.ProtectServerChanges;
-				
 			}
 
 			Console.WriteLine("Saving your edits...");
@@ -61,17 +58,17 @@ namespace MongoDB.Kennedy.Sample
 
 		public static void LoadData()
 		{
-			DataContext ctx = new DataContext("SampleDriverDb");
+			var ctx = new DataContext("SampleDriverDb");
 
-			Book[] books = new Book[]
+			Book[] books =
 			{
 				new Book {Name = "Book 1", PageCount = 100},
 				new Book {Name = "Book 2", PageCount = 200},
 				new Book {Name = "Book 3", PageCount = 300},
-				new Book {Name = "Book 4", PageCount = 400},
+				new Book {Name = "Book 4", PageCount = 400}
 			};
 
-			foreach (var book in books)
+			foreach (Book book in books)
 			{
 				ctx.Save(book);
 			}

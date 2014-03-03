@@ -1,14 +1,14 @@
 ﻿using System;
-using System.Linq;
 using MongoDB.Bson;
 
-namespace MongoDB.Kennedy.Sample
+namespace MongoDB.Kennedy.Tests.TestData
 {
-	public class Book : IMongoEntity
+	public class Owner : IMongoEntity
 	{
 		public string Name { get; set; }
-		public int PageCount { get; set; }
+		public int NumberOfPets { get; set; }
 		public ObjectId _id { get; set; }
+
 		public string _accessId { get; set; }
 	}
 }

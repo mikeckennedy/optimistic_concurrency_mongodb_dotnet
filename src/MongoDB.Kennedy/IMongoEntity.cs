@@ -4,9 +4,9 @@ using MongoDB.Bson;
 
 namespace MongoDB.Kennedy
 {
-	public interface IMongoEntity 
+	public interface IMongoEntity
 	{
 		ObjectId _id { get; }
-		string _accessId { get; set; }	
+		string _accessId { get; set; }
 	}
 }

@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 namespace MongoDB.Kennedy
 {
 	[Serializable]
-	public class MongoConcurrencyException : MongoContextException 
+	public class MongoConcurrencyException : MongoContextException
 	{
 		public MongoConcurrencyException(string message) : base(message)
 		{

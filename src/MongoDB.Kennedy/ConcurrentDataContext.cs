@@ -11,15 +11,15 @@ namespace MongoDB.Kennedy
 	{
 		protected ConcurrentDataContext(string databaseName,
 			string serverName = "localhost",
-            int port = 27017,
+			int port = 27017,
 			bool safeMode = true) : base(databaseName, serverName, port, safeMode)
 		{
 		}
 
 		/// <summary>
-		/// Save changes to entity back to MongoDB *with* concurrency protection.
-		/// The name of the collection will be the name of the type.
-		/// The save mode is ConcurrentSaveOptions.ProtectServerChanges.
+		///     Save changes to entity back to MongoDB *with* concurrency protection.
+		///     The name of the collection will be the name of the type.
+		///     The save mode is ConcurrentSaveOptions.ProtectServerChanges.
 		/// </summary>
 		/// <typeparam name="T">Type of entity</typeparam>
 		/// <param name="entity">The entity to be saved</param>
@@ -29,43 +29,44 @@ namespace MongoDB.Kennedy
 		}
 
 		/// <summary>
-		/// Save changes to entity back to MongoDB with concurrency protection 
-		/// specified by saveOptions. If you want to *overwrite* changes made 
-		/// on the server use ConcurrentSaveOptions.OverwriteServerChanges.
-		/// The save mode is ConcurrentSaveOptions.ProtectServerChanges.
+		///     Save changes to entity back to MongoDB with concurrency protection
+		///     specified by saveOptions. If you want to *overwrite* changes made
+		///     on the server use ConcurrentSaveOptions.OverwriteServerChanges.
+		///     The save mode is ConcurrentSaveOptions.ProtectServerChanges.
 		/// </summary>
 		/// <typeparam name="T">Type of entity</typeparam>
 		/// <param name="entity">The entity to be saved</param>
 		/// <param name="collectionName">The name of the collection in the MongoDB database</param>
 		public override void Save<T>(T entity, string collectionName)
 		{
-			this.Save(entity, collectionName, ConcurrentSaveOptions.ProtectServerChanges);
+			Save(entity, collectionName, ConcurrentSaveOptions.ProtectServerChanges);
 		}
 
 		/// <summary>
-		/// Save changes to entity back to MongoDB with concurrency protection 
-		/// specified by saveOptions. If you want to *overwrite* changes made 
-		/// on the server use ConcurrentSaveOptions.OverwriteServerChanges.
+		///     Save changes to entity back to MongoDB with concurrency protection
+		///     specified by saveOptions. If you want to *overwrite* changes made
+		///     on the server use ConcurrentSaveOptions.OverwriteServerChanges.
 		/// </summary>
 		/// <typeparam name="T">Type of entity</typeparam>
 		/// <param name="entity">The entity to be saved</param>
 		/// <param name="saveOptions">
-		/// Enables or disables concurrency projected, 
-		/// ConcurrentSaveOptions.ProtectServerChanges is recommended.
+		///     Enables or disables concurrency projected,
+		///     ConcurrentSaveOptions.ProtectServerChanges is recommended.
 		/// </param>
-		public void Save<T>(T entity, ConcurrentSaveOptions saveOptions) where T: class
+		public void Save<T>(T entity, ConcurrentSaveOptions saveOptions) where T : class
 		{
-			this.Save(entity, GetCollectionName<T>(), saveOptions);
-		}		
-		
+			Save(entity, GetCollectionName<T>(), saveOptions);
+		}
+
 		public void Save<T>(T entity, string connectionName, ConcurrentSaveOptions saveOptions) where T : class
 		{
 			if (entity == null)
 				throw new ArgumentNullException("entity");
 
-			IMongoEntity mongoEntity = entity as IMongoEntity;
-			if (mongoEntity== null)
-				throw new InvalidOperationException("Cannot save entity in ConcurrentDataContext. " + typeof(T).Name + " does not implemented IMongoEntity.");
+			var mongoEntity = entity as IMongoEntity;
+			if (mongoEntity == null)
+				throw new InvalidOperationException("Cannot save entity in ConcurrentDataContext. " + typeof (T).Name +
+				                                    " does not implemented IMongoEntity.");
 
 			if (mongoEntity._id == ObjectId.Empty)
 				InternalInsert(entity, connectionName);
@@ -73,11 +74,11 @@ namespace MongoDB.Kennedy
 				InternalUpdate(entity, connectionName, saveOptions);
 		}
 
-		private void InternalInsert<T>(T entity, string name)// where T : IMongoEntity
+		private void InternalInsert<T>(T entity, string name) // where T : IMongoEntity
 		{
-			IMongoEntity mongoEntity = (IMongoEntity)entity;
+			var mongoEntity = (IMongoEntity) entity;
 
-			var coll = Db.GetCollection<T>(name);
+			MongoCollection<T> coll = Db.GetCollection<T>(name);
 			mongoEntity._accessId = BuildAccessId();
 
 			WriteConcernResult concern = coll.Insert(entity);
@@ -85,11 +86,11 @@ namespace MongoDB.Kennedy
 				throw new MongoQueryException("Cannot insert entity: " + concern.LastErrorMessage);
 		}
 
-		private void InternalUpdate<T>(T entity, string name, ConcurrentSaveOptions saveOptions)// where T : IMongoEntity
+		private void InternalUpdate<T>(T entity, string name, ConcurrentSaveOptions saveOptions) // where T : IMongoEntity
 		{
-			IMongoEntity mongoEntity = (IMongoEntity)entity;
+			var mongoEntity = (IMongoEntity) entity;
 
-			var coll = Db.GetCollection<T>(name);
+			MongoCollection<T> coll = Db.GetCollection<T>(name);
 
 			IMongoQuery find;
 			if (saveOptions == ConcurrentSaveOptions.ProtectServerChanges)
@@ -116,19 +117,18 @@ namespace MongoDB.Kennedy
 				{
 					throw new MongoConcurrencyException(res.ErrorMessage);
 				}
-				
+
 				// problem. is there just no document or is there a concurrency problem.
 				// let's do a little work to no be overly agressive on the errors.
 
-				bool isConcurrencyError = coll.Find(Query.EQ("_id", mongoEntity._id)).Any();//coll.AsQueryable().Any(e => e._id == mongoEntity._id);
+				bool isConcurrencyError = coll.Find(Query.EQ("_id", mongoEntity._id)).Any();
+					//coll.AsQueryable().Any(e => e._id == mongoEntity._id);
 				if (isConcurrencyError)
 				{
-					throw new MongoConcurrencyException("Entity modified by other writer since being retreived from db: id = " + mongoEntity._id);
+					throw new MongoConcurrencyException("Entity modified by other writer since being retreived from db: id = " +
+					                                    mongoEntity._id);
 				}
-				else
-				{
-					throw new MongoException("Cannot update entity (no entity with ID " + mongoEntity._id + " exists in the db.");
-				}
+				throw new MongoException("Cannot update entity (no entity with ID " + mongoEntity._id + " exists in the db.");
 			}
 			catch
 			{
@@ -139,9 +139,9 @@ namespace MongoDB.Kennedy
 
 		public override void Delete<T>(T entity)
 		{
-			var name = GetCollectionName<T>();
+			string name = GetCollectionName<T>();
 
-			var find = Query.And(
+			IMongoQuery find = Query.And(
 				Query.EQ("_id", entity._id),
 				Query.EQ("_accessId", entity._accessId));
 
@@ -149,7 +149,7 @@ namespace MongoDB.Kennedy
 			entity._accessId = BuildAccessId();
 			try
 			{
-				var coll = Db.GetCollection<T>(name);
+				MongoCollection<T> coll = Db.GetCollection<T>(name);
 
 				WriteConcernResult res = coll.Remove(find);
 				if (res.DocumentsAffected == 1 && res.Ok)
@@ -162,13 +162,13 @@ namespace MongoDB.Kennedy
 				{
 					throw new MongoQueryException(res.ErrorMessage);
 				}
-				
+
 				// problem. is there just no document or is there a concurrency problem.
 				// let's do a little work to no be overly agressive on the errors.
 				bool isTrueError = coll.AsQueryable().Any(e => e._id == entity._id);
 				if (isTrueError)
 				{
-					throw new MongoCommandException(
+					throw new MongoConcurrencyException(
 						"The following entity has been modified by another request between the time you requested and then deleted it: " +
 						entity._id);
 				}

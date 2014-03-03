@@ -5,7 +5,7 @@ using MongoDB.Driver;
 
 namespace MongoDB.Kennedy
 {
-	public class MongoContextException : MongoException 
+	public class MongoContextException : MongoException
 	{
 		public MongoContextException(string message) : base(message)
 		{
