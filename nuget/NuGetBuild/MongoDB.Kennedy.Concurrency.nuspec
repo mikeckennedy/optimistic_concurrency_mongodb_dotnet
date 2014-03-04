@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>MongoDB.Kennedy.Concurrency</id>
-        <version>1.0.8</version>
+        <version>1.0.10</version>
         <title>Optimistic Concurrency for MongoDB in .NET</title>
         <authors>Michael Kennedy</authors>
         <owners>Michael Kennedy</owners>
