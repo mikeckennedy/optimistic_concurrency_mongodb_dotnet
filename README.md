@@ -1,6 +1,8 @@
 Optimistic concurrency for MongoDB in .NET
 =====================================
 
+**Available on NuGet**: [https://www.nuget.org/packages/MongoDB.Kennedy.Concurrency/](https://www.nuget.org/packages/MongoDB.Kennedy.Concurrency/)
+
 More details at: 
 http://blog.michaelckennedy.net/2013/04/08/optimistic-concurrency-in-mongodb-using-net-and-csharp/
 
