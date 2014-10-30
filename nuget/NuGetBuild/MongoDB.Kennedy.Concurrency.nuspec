@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>MongoDB.Kennedy.Concurrency</id>
-        <version>1.0.10</version>
+        <version>1.0.12</version>
         <title>Optimistic Concurrency for MongoDB in .NET</title>
         <authors>Michael Kennedy</authors>
         <owners>Michael Kennedy</owners>
@@ -10,11 +10,11 @@
         <projectUrl>https://github.com/mikeckennedy/optimistic_concurrency_mongodb_dotnet</projectUrl>
         <requireLicenseAcceptance>true</requireLicenseAcceptance>
         <description>This library is for adding optimistic concurrency control to MongoDB using techniques similar to Entity Framework as well as adding basic DbContext type of functionality to your applications.</description>
-        <releaseNotes>Added ability to overwrite changed data (for use-cases where users can make that choice). Still safe by default.</releaseNotes>
+        <releaseNotes>Updated library to use the latest MongoDB driver (1.9.2).</releaseNotes>
         <copyright>Copyright Michael Kennedy 2013-2014</copyright>
         <tags>MongoDB Mongo Database Transactions Concurrency</tags>
         <dependencies>
-            <dependency id="mongocsharpdriver" version="1.8.1" />
+            <dependency id="mongocsharpdriver" version="1.9.2" />
         </dependencies>
     </metadata>
     <files>
