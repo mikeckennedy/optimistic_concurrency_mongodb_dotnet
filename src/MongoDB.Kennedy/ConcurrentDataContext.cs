@@ -10,9 +10,13 @@ namespace MongoDB.Kennedy
 	public class ConcurrentDataContext : MongoDbDataContext
 	{
 		protected ConcurrentDataContext(string databaseName,
+		databaseName,
+			string username,
+			string password,
 			string serverName = "localhost",
 			int port = 27017,
-			bool safeMode = true) : base(databaseName, serverName, port, safeMode)
+			bool safeMode = true)
+			: base(databaseName, username, password, serverName, port, safeMode)
 		{
 		}
 
